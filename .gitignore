@@ -1,0 +1,53 @@
+# =========================
+# DEPENDENCIES
+# =========================
+node_modules/
+*/node_modules/
+
+# =========================
+# ENVIRONMENT FILES
+# =========================
+.env
+.env.local
+.env.development
+.env.production
+
+# =========================
+# BUILD OUTPUTS
+# =========================
+dist/
+build/
+out/
+
+# =========================
+# LOGS
+# =========================
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+logs/
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE FILES
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# SEQUELIZE / BACKEND CACHE
+# =========================
+sequelize-data.json
+*.sqlite
+*.sqlite3
+
+# =========================
+# OPTIONAL BACKEND TEMP FILES
+# =========================
+tmp/
+uploads/
