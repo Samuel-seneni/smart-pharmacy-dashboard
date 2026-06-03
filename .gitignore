@@ -2,8 +2,7 @@
 # DEPENDENCIES
 # =========================
 node_modules/
-*/node_modules/
-
+*/node_module
 # =========================
 # ENVIRONMENT FILES
 # =========================
