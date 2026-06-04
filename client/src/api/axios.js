@@ -1,12 +1,12 @@
 import axios from "axios";
+import config from "../config";
 
 const api = axios.create({
-  baseURL: "https://smart-pharmacy-dashboard-1.onrender.com/",
+  baseURL: config.API_URL,
 });
 
 // Attach token automatically
 api.interceptors.request.use((config) => {
-
   const token = localStorage.getItem("token");
 
   if (token) {
@@ -14,7 +14,6 @@ api.interceptors.request.use((config) => {
   }
 
   return config;
-
 });
 
 export default api;

@@ -1,20 +1,22 @@
 import { io } from "socket.io-client";
+import config from "../config";
 
-// IMPORTANT: use backend URL (NOT localhost in production)
-const SOCKET_URL = "https://smart-pharmacy-dashboard-1.onrender.com";
-
-const socket = io(SOCKET_URL, {
-  transports: ["polling", "websocket"],
+const socket = io(config.SOCKET_URL, {
+  transports: ["websocket", "polling"],
   withCredentials: true,
+  autoConnect: true,
 });
 
-// connection logs (debug)
 socket.on("connect", () => {
   console.log("✅ Socket connected:", socket.id);
 });
 
 socket.on("disconnect", () => {
   console.log("❌ Socket disconnected");
+});
+
+socket.on("connect_error", (err) => {
+  console.error("❌ Socket connection error:", err.message);
 });
 
 export default socket;

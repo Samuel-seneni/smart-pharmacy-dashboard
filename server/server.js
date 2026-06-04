@@ -15,6 +15,7 @@ const pdfRoutes = require("./routes/pdfRoutes");
 const userRoutes = require("./routes/userRoutes");
 const logRoutes = require("./routes/logRoutes");
 const patientRoutes = require("./routes/patientRoutes");
+const alertRoutes = require("./routes/alertRoutes");
 
 const activityLogger = require("./middleware/activityLogger");
 
@@ -37,16 +38,30 @@ SOCKET.IO SETUP
 */
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: [
+      "http://localhost:3000",
+      "https://smart-pharmacy-dashboard-chi.vercel.app"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   },
 });
 
-// make globally accessible
+// Global access
 global.io = io;
 
 io.on("connection", (socket) => {
   console.log("⚡ Client connected:", socket.id);
+
+  socket.on("join_room", (room) => {
+    socket.join(room);
+    console.log(`📦 Joined room: ${room}`);
+  });
+
+  socket.on("leave_room", (room) => {
+    socket.leave(room);
+    console.log(`📦 Left room: ${room}`);
+  });
 
   socket.on("disconnect", () => {
     console.log("❌ Client disconnected:", socket.id);
@@ -80,8 +95,13 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports/pdf", pdfRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/logs", logRoutes);
-app.use("/api/alerts", require("./routes/alertRoutes"));
+app.use("/api/alerts", alertRoutes);
 
+/*
+========================
+ACTIVITY LOGGER
+========================
+*/
 app.use(activityLogger);
 
 /*
@@ -110,7 +130,7 @@ const startServer = async () => {
 
     console.log("✅ Database Synced");
 
-    // AI ALERTS
+    // AI ALERT SYSTEM
     try {
       const { checkLowStock } = require("./utils/aiAlerts");
 

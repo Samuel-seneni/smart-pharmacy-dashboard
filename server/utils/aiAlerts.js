@@ -1,5 +1,5 @@
 const Medicine = require("../models/Medicine");
-const { getIO } = require("../sockets/socketServer");
+const { getIO } = require("../sockets/socket");
 
 /*
 ========================
