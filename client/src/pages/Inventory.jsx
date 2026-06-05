@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
-import { io } from "socket.io-client";
+import socket from "../sockets/socket";
 
-const socket = io("http://localhost:5000"); // change in production
 
 function Inventory() {
   const [logs, setLogs] = useState([]);

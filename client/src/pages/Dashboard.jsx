@@ -19,9 +19,8 @@ import {
   CalendarClock,
 } from "lucide-react";
 
-import { io } from "socket.io-client";
+import socket from "../sockets/socket";
 
-const socket = io("http://localhost:5000"); // adjust in production
 
 function Dashboard() {
   const [overview, setOverview] = useState({});

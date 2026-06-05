@@ -13,7 +13,8 @@ import {
 
 function Reports() {
 
-  const baseURL = "http://localhost:5000/api/reports/pdf";
+  const baseURL =
+  import.meta.env.VITE_API_URL + "/api/reports/pdf";
 
   // FILTER STATE
   const [fromDate, setFromDate] = useState("");
