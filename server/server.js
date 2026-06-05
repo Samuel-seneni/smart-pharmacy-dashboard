@@ -38,11 +38,13 @@ ALLOWED ORIGINS
 =====================================
 */
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "https://smart-pharmacy-dashboard-chi.vercel.app",
-];
+const allowedOrigins = (
+  process.env.ALLOWED_ORIGINS ||
+  "http://localhost:3000,http://localhost:5173,https://smart-pharmacy-dashboard-chi.vercel.app,https://smart-pharmacy-dashboard-rouge.vercel.app"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 /*
 =====================================
@@ -56,7 +58,7 @@ app.use(
       // Allow Postman and server-to-server requests
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 

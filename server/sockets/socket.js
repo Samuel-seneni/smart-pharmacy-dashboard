@@ -11,10 +11,13 @@ const EVENTS = {
 function initSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: [
-        "http://localhost:3000",
-        "https://smart-pharmacy-dashboard-chi.vercel.app"
-      ],
+      origin: (
+        process.env.ALLOWED_ORIGINS ||
+        "http://localhost:3000,http://localhost:5173,https://smart-pharmacy-dashboard-chi.vercel.app,https://smart-pharmacy-dashboard-rouge.vercel.app"
+      )
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean),
       methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,
     },
