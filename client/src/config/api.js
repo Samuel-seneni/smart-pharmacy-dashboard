@@ -1,7 +1,13 @@
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+const DEFAULT_API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://smart-pharmacy-dashboard-1.onrender.com");
 
-export const SOCKET_URL = API_URL;
+const API_URL = DEFAULT_API_URL;
+
+export const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || DEFAULT_API_URL;
 
 export const REPORTS_PDF_URL = `${API_URL}/api/reports/pdf`;
 
