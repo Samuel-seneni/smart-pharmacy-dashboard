@@ -24,66 +24,101 @@ const { sequelize, connectDB } = require("./config/db");
 require("./models");
 
 /*
-========================
-APP + SERVER SETUP
-========================
+=====================================
+APP + HTTP SERVER
+=====================================
 */
+
 const app = express();
 const server = http.createServer(app);
 
 /*
-========================
-SOCKET.IO SETUP
-========================
+=====================================
+ALLOWED ORIGINS
+=====================================
 */
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://smart-pharmacy-dashboard-chi.vercel.app",
+];
+
+/*
+=====================================
+EXPRESS MIDDLEWARE
+=====================================
+*/
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow Postman and server-to-server requests
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS policy: Origin not allowed"));
+    },
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
+/*
+=====================================
+SOCKET.IO
+=====================================
+*/
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://smart-pharmacy-dashboard-chi.vercel.app"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
+  transports: ["websocket", "polling"],
 });
 
 // Global access
 global.io = io;
 
 io.on("connection", (socket) => {
-  console.log("⚡ Client connected:", socket.id);
+  console.log(`⚡ Client Connected: ${socket.id}`);
 
   socket.on("join_room", (room) => {
     socket.join(room);
-    console.log(`📦 Joined room: ${room}`);
+    console.log(`📦 Joined Room: ${room}`);
   });
 
   socket.on("leave_room", (room) => {
     socket.leave(room);
-    console.log(`📦 Left room: ${room}`);
+    console.log(`📦 Left Room: ${room}`);
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
+    console.log(`❌ Client Disconnected: ${socket.id}`);
   });
 });
 
 /*
-========================
-MIDDLEWARE
-========================
+=====================================
+ROOT ROUTE
+=====================================
 */
-app.use(cors());
-app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("✅ Smart Pharmacy API Running...");
+});
 
 /*
-========================
-ROUTES
-========================
+=====================================
+API ROUTES
+=====================================
 */
-app.get("/", (req, res) => {
-  res.send("Smart Pharmacy API Running...");
-});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -98,39 +133,54 @@ app.use("/api/logs", logRoutes);
 app.use("/api/alerts", alertRoutes);
 
 /*
-========================
+=====================================
 ACTIVITY LOGGER
-========================
+=====================================
 */
+
 app.use(activityLogger);
 
 /*
-========================
-ERROR HANDLER
-========================
+=====================================
+GLOBAL ERROR HANDLER
+=====================================
 */
+
 app.use((err, req, res, next) => {
   console.error("❌ Error:", err);
 
   res.status(500).json({
+    success: false,
     message: "Internal Server Error",
-    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    error:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : undefined,
   });
 });
 
 /*
-========================
+=====================================
 START SERVER
-========================
+=====================================
 */
+
 const startServer = async () => {
   try {
     await connectDB();
+
+    console.log("✅ Database Connected");
+
     await sequelize.sync({ alter: true });
 
     console.log("✅ Database Synced");
 
-    // AI ALERT SYSTEM
+    /*
+    =====================================
+    AI LOW STOCK ALERT SERVICE
+    =====================================
+    */
+
     try {
       const { checkLowStock } = require("./utils/aiAlerts");
 
@@ -144,17 +194,21 @@ const startServer = async () => {
 
       console.log("🤖 AI Alert Service Started");
     } catch (err) {
-      console.log("⚠️ AI Alerts not configured yet");
+      console.log("⚠️ AI Alerts not configured.");
     }
 
     const PORT = process.env.PORT || 5000;
 
     server.listen(PORT, () => {
+      console.log("=================================");
       console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 http://localhost:${PORT}`);
+      console.log("⚡ Socket.IO Ready");
+      console.log("=================================");
     });
-
   } catch (error) {
-    console.error("❌ Server Startup Error:", error);
+    console.error("❌ Server Startup Error");
+    console.error(error);
   }
 };
 
