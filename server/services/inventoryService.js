@@ -13,13 +13,16 @@ const updateStock = async ({
   reference = null,
   performedBy = "system",
 }) => {
-  const medicine = await Medicine.findByPk(medicineId);
+  const medicineIdNum = Number(medicineId);
+  const qty = Number(quantity || 0);
+
+  const medicine = await Medicine.findByPk(medicineIdNum);
 
   if (!medicine) {
     throw new Error("Medicine not found");
   }
 
-  const previousStock = medicine.quantity;
+  const previousStock = Number(medicine.quantity || 0);
 
   let newStock = previousStock;
 
@@ -30,35 +33,37 @@ const updateStock = async ({
 
   // ================= OUT =================
   if (type === "OUT") {
-    if (previousStock < quantity) {
+    if (previousStock < qty) {
       throw new Error("Insufficient stock");
     }
-    newStock = previousStock - quantity;
+    newStock = previousStock - qty;
   }
 
   // Update medicine stock
   medicine.quantity = newStock;
   await medicine.save();
 
-  global.io.emit("stockUpdated", {
-  medicineId,
-  newStock,
-  type,
-});
+  if (global.io?.emit) {
+    global.io.emit("stockUpdated", {
+      medicineId: medicineIdNum,
+      newStock,
+      type,
+    });
+  }
 
   // Inventory log (simple log table)
   await Inventory.create({
-    medicineId,
+    medicineId: medicineIdNum,
     type,
-    quantity,
+    quantity: qty,
     note: reference,
   });
 
   // Audit log (ERP tracking)
   await InventoryAudit.create({
-    medicineId,
+    medicineId: medicineIdNum,
     action: type,
-    quantity,
+    quantity: qty,
     previousStock,
     newStock,
     reference,
@@ -81,11 +86,14 @@ const updateStock = async ({
 };
 
 const stockOut = async (payload) => {
+  const body = payload?.body || payload || {};
+
   return updateStock({
-    ...payload,
+    medicineId: body.medicineId ?? payload.medicineId,
+    quantity: body.quantity ?? payload.quantity,
     type: "OUT",
-    reference: payload.reference || payload.note || "SALE",
-    performedBy: payload.performedBy || payload.user?.email || "system",
+    reference: body.note || payload.note || "SALE",
+    performedBy: payload.user?.email || payload.performedBy || "system",
   });
 };
 
