@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { getJwtSecret } = require("./jwtSecret");
 
 const generateToken = (
   id,
@@ -13,7 +14,7 @@ const generateToken = (
       name,
       email,
     },
-    process.env.JWT_SECRET,
+    getJwtSecret(),
     {
       expiresIn: "7d",
     }
