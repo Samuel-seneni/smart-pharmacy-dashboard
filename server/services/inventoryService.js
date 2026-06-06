@@ -80,6 +80,16 @@ const updateStock = async ({
   };
 };
 
+const stockOut = async (payload) => {
+  return updateStock({
+    ...payload,
+    type: "OUT",
+    reference: payload.reference || payload.note || "SALE",
+    performedBy: payload.performedBy || payload.user?.email || "system",
+  });
+};
+
 module.exports = {
   updateStock,
+  stockOut,
 };
