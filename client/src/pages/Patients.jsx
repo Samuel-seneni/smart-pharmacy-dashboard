@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import Modal from "../components/Modal";
 
 function Patients() {
   const [patients, setPatients] = useState([]);
@@ -248,23 +249,6 @@ function Patients() {
         </Modal>
       )}
 
-    </div>
-  );
-}
-
-/* ================= REUSABLE MODAL ================= */
-function Modal({ title, children, onClose }) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white w-full max-w-md p-4 rounded">
-
-        <div className="flex justify-between mb-3">
-          <h2 className="text-lg font-bold">{title}</h2>
-          <button onClick={onClose}>✖</button>
-        </div>
-
-        {children}
-      </div>
     </div>
   );
 }
