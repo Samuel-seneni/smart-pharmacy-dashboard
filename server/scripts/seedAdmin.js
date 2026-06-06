@@ -1,10 +1,8 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const { sequelize } = require("../config/db");
 
 const seedAdmin = async () => {
   try {
-    await sequelize.sync();
 
     const existing = await User.findOne({
       where: { email: "admin@pharmacy.com" },
@@ -29,7 +27,8 @@ const seedAdmin = async () => {
 
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
-seedAdmin();
+module.exports = seedAdmin;

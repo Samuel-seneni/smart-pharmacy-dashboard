@@ -18,6 +18,7 @@ const patientRoutes = require("./routes/patientRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 
 const activityLogger = require("./middleware/activityLogger");
+const seedAdmin = require("./scripts/seedAdmin");
 
 const { sequelize, connectDB } = require("./config/db");
 
@@ -173,7 +174,12 @@ const startServer = async () => {
 
     console.log("✅ Database Connected");
 
-    await sequelize.sync({ alter: true });
+    try {
+      await seedAdmin();
+      console.log("✅ Admin seed check completed");
+    } catch (seedErr) {
+      console.warn("⚠️ Admin seed skipped:", seedErr.message);
+    }
 
     console.log("✅ Database Synced");
 
@@ -199,15 +205,50 @@ const startServer = async () => {
       console.log("⚠️ AI Alerts not configured.");
     }
 
-    const PORT = process.env.PORT || 5000;
+    const PORT = Number(process.env.PORT || 5000);
+    let retryCount = 0;
+    let retryTimer = null;
 
-    server.listen(PORT, () => {
-      console.log("=================================");
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌐 http://localhost:${PORT}`);
-      console.log("⚡ Socket.IO Ready");
-      console.log("=================================");
-    });
+    const startListening = () => {
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        retryTimer = null;
+      }
+
+      const onError = (err) => {
+        if (err && err.code === "EADDRINUSE") {
+          if (retryCount < 5) {
+            retryCount += 1;
+            console.warn(
+              `⚠️ Port ${PORT} is busy. Retrying in 2 seconds... (${retryCount}/5)`
+            );
+            retryTimer = setTimeout(startListening, 2000);
+            return;
+          }
+
+          console.error(`❌ Port ${PORT} is still unavailable after 5 attempts.`);
+          process.exit(1);
+        }
+
+        console.error("❌ Server Startup Error");
+        console.error(err);
+        process.exit(1);
+      };
+
+      server.once("error", onError);
+
+      server.listen(PORT, () => {
+        retryCount = 0;
+        server.removeListener("error", onError);
+        console.log("=================================");
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`🌐 http://localhost:${PORT}`);
+        console.log("⚡ Socket.IO Ready");
+        console.log("=================================");
+      });
+    };
+
+    startListening();
   } catch (error) {
     console.error("❌ Server Startup Error");
     console.error(error);
