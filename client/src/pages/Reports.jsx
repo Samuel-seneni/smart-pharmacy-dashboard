@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { REPORTS_PDF_URL } from "../config/api";
 
 import {
   FileText,
@@ -13,8 +14,7 @@ import {
 
 function Reports() {
 
-  const baseURL =
-  import.meta.env.VITE_API_URL + "/api/reports/pdf";
+  const baseURL = REPORTS_PDF_URL;
 
   // FILTER STATE
   const [fromDate, setFromDate] = useState("");
@@ -141,7 +141,7 @@ function Reports() {
       </div>
 
       {/* AI INSIGHT PANEL */}
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded shadow border">
+      <div className="bg-linear-to-r from-purple-50 to-blue-50 p-4 rounded shadow border">
         <h2 className="font-bold flex items-center gap-2 mb-2">
           <Brain className="text-purple-600" />
           AI Insight Engine
